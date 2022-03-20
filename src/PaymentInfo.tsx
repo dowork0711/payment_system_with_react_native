@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState } from "react";
 import { Alert, Button, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import RNPickerSelect from 'react-native-picker-select';
@@ -7,23 +8,23 @@ const date = new Date()
 let random = Math.floor(Math.random() * 10 + 1)
 let uid = `${date.getFullYear()}${date.getMonth()+1}${date.getDate()}-${date.getHours()}${date.getMinutes()}${date.getSeconds()}-${random}`
 
-const data = {
-    pg: 'tosspay',
-    pay_method: 'card',
-    merchant_uid: `ORD-${uid}-userId`,   // 사용자 아이디를 추가
-    name: '카카오 편수냄비',
-    amount: 15200,
-    buyer_email: 'kakao@kakao.com',
-    buyer_name: '카카오',
-    buyer_tel: '010-1234-5678',
-    buyer_addr: '대전광역시 서구 둔산로 100',
-    buyer_postcode: '12345',
-    app_scheme: 'example'
-}
+// const data = {
+//     pg: '',
+//     pay_method: 'card',
+//     merchant_uid: `ORD-${uid}-userId`,   // 사용자 아이디를 추가
+//     name: '카카오 편수냄비',
+//     amount: 15200,
+//     buyer_email: 'kakao@kakao.com',
+//     buyer_name: '카카오',
+//     buyer_tel: '010-1234-5678',
+//     buyer_addr: '대전광역시 서구 둔산로 100',
+//     buyer_postcode: '12345',
+//     app_scheme: 'example'
+// }
 
 // 주소의 길이를 줄여서 표현해주는 함수
 const reduceAddr = (addr:String) => {
-    if(addr.length > 13) {
+    if(addr.length > 25) {
         return addr.substring(0, 13) + '...';
     }
     return addr;
@@ -36,16 +37,18 @@ const addHyphenToPhoneNumber = (phoneNum:String) => {
     return collectNum;
 }
 
-export default function PaymentInfo({navigation}:any) {
+export default function PaymentInfo({navigation}:any, props:any) {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [toPay, setToPay] = useState("결제 수단이 선택되지 않았습니다.");
     
     // 결제관련 정보
-    const [buyerName, setBuyerName] = useState(data.buyer_name);
-    const [buyerPostcode, setBuyerPostcode] = useState(data.buyer_postcode);
-    const [buyerAddr, setBuyerAddr] = useState(data.buyer_addr);
-    const [buyerTel, setBuyerTel] = useState(data.buyer_tel);
+    const [buyerName, setBuyerName] = useState('테스트');
+    const [buyerPostcode, setBuyerPostcode] = useState(12345);
+    const [buyerAddr, setBuyerAddr] = useState('대전광역시 서구 둔산로 100');
+    const [buyerTel, setBuyerTel] = useState('010-2345-7891');
+    const [pg, setPg] = useState('');
+    const amount = 12400
 
     return (
         <View style={{padding: 24, flex: 1, alignItems: 'stretch'}}>
@@ -112,9 +115,9 @@ export default function PaymentInfo({navigation}:any) {
                     <Text style={styles.subTitle}>주문 정보</Text>
                     <View style={styles.buyContainer}>
                         <Text>IMG</Text>
-                        <Text>{data.name}</Text>
+                        <Text>카카오 편수냄비</Text>
                         <Text>1개</Text>
-                        <Text>{data.amount}</Text>
+                        <Text>{amount}</Text>
                     </View>
                 </View>
                 
@@ -129,11 +132,11 @@ export default function PaymentInfo({navigation}:any) {
                             ]}
                             onValueChange={(val) => {
                                 if (val === 'kakaopay') {
-                                    setToPay(`카카오페이로 ${data.amount}원을 결제합니다.`);
-                                    
+                                    setToPay(`카카오페이로 ${amount}원을 결제합니다.`);
+                                    setPg('kakaopay');
                                 } else if (val === 'tosspay') {
-                                    setToPay(`토스 페이먼츠로 ${data.amount}원을 결제합니다.`);
-                                    
+                                    setToPay(`토스 페이먼츠로 ${amount}원을 결제합니다.`);
+                                    setPg('tosspay');
                                 } else {
                                     setToPay('결제수단이 선택되지 않았습니다.');
                                 }
@@ -146,11 +149,31 @@ export default function PaymentInfo({navigation}:any) {
                     <Text style={styles.toPayView}>{toPay}</Text>
                     <TouchableOpacity 
                         style={[styles.paymentBtn, styles.btn]}
-                        onPress={() => {navigation.navigate('payment')}}
+                        onPress={() => {
+                            AsyncStorage.setItem('payment', JSON.stringify({
+                                pg: pg,
+                                pay_method: 'card',
+                                merchant_uid: `ORD-${uid}-userId`,   // 사용자 아이디를 추가
+                                name: '카카오 편수냄비',
+                                amount: amount,
+                                buyer_email: 'kakao@kakao.com',
+                                buyer_name: buyerName,
+                                buyer_tel: buyerTel,
+                                buyer_addr: buyerAddr,
+                                buyer_postcode: '12345',
+                                app_scheme: 'example',
+                                escrow: false
+                            }));
+                            setModalVisible(false);
+                            navigation.navigate('payment');
+                        }}
                     >
                         <Text style={styles.btnText}>결제하기</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.calcelBtn, styles.btn]}>
+                    <TouchableOpacity 
+                        style={[styles.calcelBtn, styles.btn]}
+                        // onPress={navigation.navigate('')}
+                    >
                         <Text style={styles.btnText}>돌아가기</Text>
                     </TouchableOpacity>
                 </View>
@@ -175,22 +198,22 @@ const styles = StyleSheet.create({
         borderColor: '#e9e9e9', 
         height: 80, 
         alignItems: 'center', 
-        padding: 25, 
+        padding: 10, 
         backgroundColor: '#fff',
+        justifyContent: 'space-between'
     },
     buyerName: {
         fontSize: 20, 
         fontWeight: "800", 
-        marginRight: 20
     },
     changeBtn: {
         marginLeft: 10,
         borderRadius: 10,
+        padding: 15,
         backgroundColor: '#4b99ff',
-        padding: 7
     },
     changeBtnText: {
-        fontWeight: '700'
+        fontWeight: '700',
     },
     buyContainer: {
         flexDirection: 'row',
@@ -293,6 +316,8 @@ const modalStyles = StyleSheet.create({
         height: 40,
         margin: 10,
         borderWidth: 1,
-        padding: 10
+        padding: 10,
+        borderRadius: 10,
+        borderColor: '#e9e9e9'
     }
   });

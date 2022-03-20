@@ -22,6 +22,7 @@ import PaymentResult from "./src/PaymentResult";
   npm install react-native-picker-select
   npm install axios
   npm install react-native-modal
+  npm install @react-native-async-storage/async-storage
 */
 
 const App = ({navigation}:any) => {
