@@ -10,8 +10,8 @@ import PaymentResult from "./src/PaymentResult";
 
 /*
   설치할 모듈
-  npm i --save react-native-webview
-  npm i --save iamport-react-native
+  npm install --save react-native-webview
+  npm install --save iamport-react-native
   npm install @react-navigation/native
   npm install @react-navigation/native-stack
   npm install react-native-safe-area-context
@@ -21,6 +21,7 @@ import PaymentResult from "./src/PaymentResult";
   npm install @react-native-picker/picker
   npm install react-native-picker-select
   npm install axios
+  npm install react-native-modal
 */
 
 const App = ({navigation}:any) => {

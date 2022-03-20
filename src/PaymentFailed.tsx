@@ -6,7 +6,10 @@ export default function PaymentFailed({navigation}:any) {
     return (
         <View style={styles.container}>
             <View>
-                <Text style={styles.textView}>구매를 취소하였거나{'\n'}결제가 승인되지 않았습니다.</Text>
+                <Text style={styles.textView}>
+                    결제를 취소하여 승인되지 않았거나 {'\n'}
+                    결제 모듈을 불러오는데 실패하였습니다.
+                </Text>
             </View>
             <View style={styles.btnGroup}>
                 <TouchableOpacity 

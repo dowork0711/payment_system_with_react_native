@@ -8,12 +8,12 @@ import PaymentResult from "./PaymentResult";
 const date = new Date();
 let random = Math.floor(Math.random() * 10 + 1);
 let uid = `${date.getFullYear()}${date.getMonth()+1}${date.getDate()}-${date.getHours()}${date.getMinutes()}${date.getSeconds()}-${random}`
-const userId = 'kakao_test_account'
+const memberId = 'kakao_test_account'
 
 const data = {
     pg: 'tosspay',
     pay_method: 'card',
-    merchant_uid: `ORD-${uid}-${userId}`,   // 사용자 아이디를 추가
+    merchant_uid: `ORD-${uid}-${memberId}`,   // 사용자 아이디를 추가
     name: '카카오 편수냄비',
     amount: 15200,
     buyer_email: 'kakao@kakao.com',
@@ -21,7 +21,8 @@ const data = {
     buyer_tel: '010-1234-5678',
     buyer_addr: '대전광역시 서구 둔산로 100',
     buyer_postcode: '12345',
-    app_scheme: 'example'
+    app_scheme: 'example',
+    escrow: false,
 }
 
 // const tossData = {
@@ -38,6 +39,8 @@ const data = {
 //     app_scheme: 'example'
 // }
 
+
+
 const Loading = () => {
     return (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -49,7 +52,7 @@ const Loading = () => {
 export default function Payment({ navigation }:any) {
 
     const callBack = (resp:any) => {
-        console.log(resp);
+        // console.log(resp);
         if (resp.imp_success === 'true') {
             navigation.replace('paymentResult', resp);
         } else {
@@ -61,7 +64,7 @@ export default function Payment({ navigation }:any) {
         <>
             {/* <Text>{data.pg}로 결제 테스트하기</Text> */}
             <IMP.Payment 
-                userCode={'가맹점 코드'} 
+                userCode={'imp86589899'} 
                 data={data} 
                 loading={<Loading />}
                 callback={callBack}

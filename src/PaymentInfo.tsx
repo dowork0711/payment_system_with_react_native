@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Button, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import RNPickerSelect from 'react-native-picker-select';
 
 
@@ -20,33 +20,92 @@ const data = {
     buyer_postcode: '12345',
     app_scheme: 'example'
 }
-export default function PaymentInfo({navigation}:any) {
-    
-    const [paymentInfo, setPaymentInfo] = useState("paymentInfo");
 
-    const [toPay, setToPay] = useState("결제 수단이 선택되지 않았습니다.");
-
-    let child:any;
-
-    if (paymentInfo === "paymentInfo") {
-        child = (<Text>결제정보 화면</Text>);
-    } else if (paymentInfo === "payment") {
-        child = (<Text>결제화면</Text>);
-    } else if (paymentInfo === "paymentResult") {
-        child = (<Text>결제 완료</Text>);
+// 주소의 길이를 줄여서 표현해주는 함수
+const reduceAddr = (addr:String) => {
+    if(addr.length > 13) {
+        return addr.substring(0, 13) + '...';
     }
+    return addr;
+}
+
+// 하이픈을 자동으로 추가해주는 함수
+const addHyphenToPhoneNumber = (phoneNum:String) => {
+    let trimNum = phoneNum.replace(/[^0-9]/g, "");
+    let collectNum = trimNum.replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/,"$1-$2-$3");
+    return collectNum;
+}
+
+export default function PaymentInfo({navigation}:any) {
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [toPay, setToPay] = useState("결제 수단이 선택되지 않았습니다.");
+    
+    // 결제관련 정보
+    const [buyerName, setBuyerName] = useState(data.buyer_name);
+    const [buyerPostcode, setBuyerPostcode] = useState(data.buyer_postcode);
+    const [buyerAddr, setBuyerAddr] = useState(data.buyer_addr);
+    const [buyerTel, setBuyerTel] = useState(data.buyer_tel);
 
     return (
         <View style={{padding: 24, flex: 1, alignItems: 'stretch'}}>
-            <View>    
-                <View style={styles.eachComponent}>
-                    <Text style={styles.subTitle}>주문자 정보</Text>
-                    <View style={styles.nameSpace}>
-                        <Text style={styles.buyerName}>{data.buyer_name}</Text>
-                        <View>
-                            <Text>{data.buyer_addr}</Text>
-                            <Text>{data.buyer_tel}</Text>
+            <View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {setModalVisible(!modalVisible)}}
+                >
+                    <View style={modalStyles.centeredView}>
+                        <View style={modalStyles.modalView}>
+                            <Text style={{fontSize: 20, marginBottom: 10, fontWeight: '700'}}>받는 사람 정보 변경</Text>
+                            <TextInput
+                                style={modalStyles.modalInput}
+                                placeholder="받는 사람"
+                                value={buyerName}
+                                onChangeText={buyerName => setBuyerName(buyerName)}
+                            />
+                            <TextInput
+                                style={modalStyles.modalInput}
+                                placeholder="받는 사람 주소"
+                                value={buyerAddr}
+                                onChangeText={(buyerAddr) => setBuyerAddr(buyerAddr)}
+                            />
+                            <TextInput
+                                style={modalStyles.modalInput}
+                                placeholder="받는 사람 연락처"
+                                value={buyerTel}
+                                onChangeText={(buyerTel) => setBuyerTel(addHyphenToPhoneNumber(buyerTel))}
+                            />
+                            <View style={{flexDirection: 'row'}}>
+                                <TouchableOpacity 
+                                    style={[modalStyles.button, modalStyles.buttonClose]}
+                                    onPress={() => setModalVisible(false)}
+                                >
+                                    <Text style={{color: '#fff', fontWeight: '700'}}>취소</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[modalStyles.button, modalStyles.buttonApply]}
+                                    onPress={() => { setModalVisible(false)}
+                                    }
+                                >
+                                    <Text style={{color: '#fff', fontWeight: '700'}}>확인</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
+                    </View>
+                </Modal>
+                <View style={styles.eachComponent}>
+                    <Text style={styles.subTitle}>배송지 정보</Text>
+                    <View style={styles.nameSpace}>
+                        <Text style={styles.buyerName}>{buyerName}</Text>
+                        <View>
+                            <Text>{reduceAddr(buyerAddr)}</Text>
+                            <Text>{addHyphenToPhoneNumber(buyerTel)}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.changeBtn} onPress={() => setModalVisible(true)}>
+                            <Text style={styles.changeBtnText}>정보변경</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
                 <View style={styles.eachComponent}>
@@ -124,6 +183,15 @@ const styles = StyleSheet.create({
         fontWeight: "800", 
         marginRight: 20
     },
+    changeBtn: {
+        marginLeft: 10,
+        borderRadius: 10,
+        backgroundColor: '#4b99ff',
+        padding: 7
+    },
+    changeBtnText: {
+        fontWeight: '700'
+    },
     buyContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -161,7 +229,8 @@ const styles = StyleSheet.create({
     },
     btnText: {
         color: '#fff',
-        fontSize: 16
+        fontSize: 17,
+        fontWeight: "700"
     },
     paymentBtn: {
         backgroundColor: '#4852c7',
@@ -170,3 +239,60 @@ const styles = StyleSheet.create({
         backgroundColor: '#bd4646'
     }
 })
+
+const modalStyles = StyleSheet.create({
+    centeredView: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 22,
+      backgroundColor: 'rgba(255,255,255, 0.8)'
+    },
+    modalView: {
+      margin: 20,
+      backgroundColor: "#fff",
+      borderRadius: 20,
+      padding: 35,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5
+    },
+    button: {
+      borderRadius: 10,
+      padding: 10,
+      elevation: 2,
+      margin: 5,
+      width: 95,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonApply: {
+      backgroundColor: "#2196F3",
+    },
+    buttonClose: {
+      backgroundColor: "#bd4646",
+    },
+    textStyle: {
+      color: "white",
+      fontWeight: "bold",
+      textAlign: "center"
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: "center"
+    },
+    // 모달 내부 컴포넌트 스타일
+    modalInput: {
+        width: 200,
+        height: 40,
+        margin: 10,
+        borderWidth: 1,
+        padding: 10
+    }
+  });
